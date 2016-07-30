@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Parse url client={{client_id}}</title>
+    <script type="text/javascript">var client_id="{{client_id}}";</script>
+</head>
+<body>
+    <h1>Parse urls client={{client_id}}</h1>
+    <div>
+        <form>
+            <input type="text" name="url_1" id="url_1" >
+            <input type="date" name="url_1_datetime" id="url_1_datetime" >
+            <button onclick="loadDoc()">Отправить</button>
+            <p id="demo"></p>
+        </form>
+    </div>
+    <!--<script type="text/javascript" src="download_progress_synhronize.js"></script>-->
+    <script type="text/javascript">
+        var ws = new WebSocket("ws://localhost:5566/"+client_id);
+        ws.onmessage = function (evt) {
+            console.log(evt.data);
+            var data = JSON.parse(evt.data);
+            console.log(evt.data, data);
+        };
+        function loadDoc() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (xhttp.readyState == 4 && xhttp.status == 200) {
+                    document.getElementById("demo").innerHTML = xhttp.responseText;
+                }
+            };
+            xhttp.open("POST", "http://localhost:5566", true);
+            var data = {
+                'url': document.getElementById('url_1').value,
+                'date': document.getElementById('url_1_datetime').value
+            };
+            xhttp.send(JSON.stringify(data));
+        }
+    </script>
+</body>
+</html>
