@@ -22,6 +22,7 @@
             <button onclick="send_parse_request()">Отправить</button>
             <p id="demo"></p>
         </form>
+        <div id="results"></div>
     </div>
     <!--<script type="text/javascript" src="download_progress_synhronize.js"></script>-->
     <script type="text/javascript">
@@ -30,6 +31,13 @@
             console.log('input_data', evt.data);
             var data = JSON.parse(evt.data);
             console.log('parsed_data', data);
+            results_dom = document.getElementById('results')
+            results_dom.innerHTML=''
+            for (var key in data){
+                var line =  document.createElement("div");
+                line.innerHTML = 'url:' + data[key]['url'] + ', status:' + data[key]['status'] + ', result: ' +data[key]['result']
+                results_dom.appendChild(line)
+            }
         };
         function send_parse_request() {
             var xhttp = new XMLHttpRequest();

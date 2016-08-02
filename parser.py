@@ -107,6 +107,8 @@ class DownloadProgressHandler(WebSocketHandler):
         redis_db = tornadoredis.Client(selected_db=7)
         redis_db.connect()
         data = yield Task(redis_db.hgetall, CLIENT_PERFIX+ self.client_id)
+        for d in data:
+            data[d] = json.loads(data[d])
         yield Task(redis_db.disconnect)
         del redis_db
         print('notify_data', data)
