@@ -10,8 +10,16 @@
     <div>
         <form>
             <input type="text" name="url_1" id="url_1" >
-            <input type="date" name="url_1_datetime" id="url_1_datetime" >
-            <button onclick="loadDoc()">Отправить</button>
+            <input type="datetime-local" name="url_1_datetime" id="url_1_datetime" >
+            <input type="text" name="url_2" id="url_2" >
+            <input type="date" name="url_2_datetime" id="url_2_datetime" >
+            <input type="text" name="url_3" id="url_3" >
+            <input type="date" name="url_3_datetime" id="url_3_datetime" >
+            <input type="text" name="url_4" id="url_4" >
+            <input type="date" name="url_4_datetime" id="url_4_datetime" >
+            <input type="text" name="url_5" id="url_5" >
+            <input type="date" name="url_5_datetime" id="url_5_datetime" >
+            <button onclick="send_parse_request()">Отправить</button>
             <p id="demo"></p>
         </form>
     </div>
@@ -19,11 +27,11 @@
     <script type="text/javascript">
         var ws = new WebSocket("ws://localhost:5566/"+client_id);
         ws.onmessage = function (evt) {
-            console.log(evt.data);
+            console.log('input_data', evt.data);
             var data = JSON.parse(evt.data);
-            console.log(evt.data, data);
+            console.log('parsed_data', data);
         };
-        function loadDoc() {
+        function send_parse_request() {
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (xhttp.readyState == 4 && xhttp.status == 200) {
@@ -31,11 +39,45 @@
                 }
             };
             xhttp.open("POST", "http://localhost:5566", true);
-            var data = {
-                'url': document.getElementById('url_1').value,
-                'date': document.getElementById('url_1_datetime').value
-            };
+            var data = []
+            var index = 0
+            if (document.getElementById('url_1').value != ''){
+                data[index] = {
+                    'url': document.getElementById('url_1').value,
+                    'date': document.getElementById('url_1_datetime').value
+                }
+                index += 1
+            }
+            if (document.getElementById('url_2').value != ''){
+                data[index] = {
+                    'url': document.getElementById('url_2').value,
+                    'date': document.getElementById('url_2_datetime').value
+                }
+                index += 1
+            }
+            if (document.getElementById('url_3').value != ''){
+                data[index] = {
+                    'url': document.getElementById('url_3').value,
+                    'date': document.getElementById('url_3_datetime').value
+                }
+                index += 1
+            }
+            if (document.getElementById('url_4').value != ''){
+                data[index] = {
+                    'url': document.getElementById('url_4').value,
+                    'date': document.getElementById('url_4_datetime').value
+                }
+                index += 1
+            }
+            if (document.getElementById('url_5').value != ''){
+                data[index] = {
+                    'url': document.getElementById('url_5').value,
+                    'date': document.getElementById('url_5_datetime').value
+                }
+                index += 1
+            }
             xhttp.send(JSON.stringify(data));
+            return false
         }
     </script>
 </body>
