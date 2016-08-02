@@ -21,6 +21,7 @@ def parse_url(url):
     redis_db = StrictRedis(db=USER_DATA_REDIS_DB)
     redis_db.hset(CLIENT_PERFIX + url['user_id'], url['task_id'], json.dumps(url))
     requests.post('http://localhost:5566/notify', data={'user_id': url['user_id']})
+    del redis_db
     return
 
 

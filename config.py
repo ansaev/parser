@@ -1,3 +1,6 @@
 USER_DATA_REDIS_DB = 7
 CELERY_REDIS_DB = 31
 CLIENT_PERFIX = 'client:'
+DATE_PERFIX = 'date:'
+DATE_FORMAT = '%Y-%m-%dT%H:%M'
+

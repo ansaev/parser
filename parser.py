@@ -4,12 +4,10 @@ from datetime import datetime
 from tornado.gen import coroutine, Task
 from tornado.web import Application, RequestHandler
 from tornado.websocket import WebSocketHandler
-
-from config import CLIENT_PERFIX
+from config import CLIENT_PERFIX, DATE_PERFIX, DATE_FORMAT, USER_DATA_REDIS_DB
 from tasks import parse_url
 import tornadoredis
 
-DATAFORMAT = '%y-%m-%dT%H:%M'
 handlers = {}
 
 
@@ -19,7 +17,7 @@ class InitParserHandler(RequestHandler):
         pass
 
     def prepare(self):
-        self.redis_db = tornadoredis.Client(selected_db=7)
+        self.redis_db = tornadoredis.Client(selected_db=USER_DATA_REDIS_DB)
         self.redis_db.connect()
 
     @coroutine
@@ -45,23 +43,22 @@ class InitParserHandler(RequestHandler):
             url['task_id'] = str(uuid.uuid4())
             pushed = False
             if not url.get('date'):
-                url['date'] = datetime.now().strftime(DATAFORMAT)
+                url['date'] = datetime.now().strftime(DATE_FORMAT)
             else:
                 try:
-                    my_date = datetime.strptime(url['date'], DATAFORMAT)
+                    my_date = datetime.strptime(url['date'], DATE_FORMAT)
                     if my_date > datetime.now():
                         # push to time quuen now
                         url['status'] = 'WAITING'
                         pushed = True
-                        yield Task(self.redis_db.lpush, 'date:' + url['date'], json.dumps(url))
+                        yield Task(self.redis_db.lpush, DATE_PERFIX + url['date'], json.dumps(url))
                 except ValueError:
-                    url['date'] = datetime.now().strftime(DATAFORMAT)
+                    url['date'] = datetime.now().strftime(DATE_FORMAT)
             if pushed is False:
                 # push to quuen now
                 url['status'] = 'IN_QUEEN'
                 parse_url.delay(url)
             yield Task(self.redis_db.hset, CLIENT_PERFIX + client_id, url['task_id'], json.dumps(url))
-        print('post', urls, client_id)
         if handlers[client_id]:
             print('call_notify')
             handlers[client_id].notify_client()
@@ -104,14 +101,13 @@ class DownloadProgressHandler(WebSocketHandler):
 
     @coroutine
     def notify_client(self):
-        redis_db = tornadoredis.Client(selected_db=7)
+        redis_db = tornadoredis.Client(selected_db=USER_DATA_REDIS_DB)
         redis_db.connect()
         data = yield Task(redis_db.hgetall, CLIENT_PERFIX+ self.client_id)
         for d in data:
             data[d] = json.loads(data[d])
         yield Task(redis_db.disconnect)
         del redis_db
-        print('notify_data', data)
         self.write_message(json.dumps(data))
 
 
